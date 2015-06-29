@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified"
+           targetNamespace="http://docs.example.com/repose/oauth-authorization/v1.0"
+           xmlns:oauth-authorization="http://docs.example.com/repose/oauth-authorization/v1.0"
+           xmlns:html="http://www.w3.org/1999/xhtml"
+           xmlns:xerces="http://xerces.apache.org"
+           xmlns:saxon="http://saxon.sf.net/"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="oauth-authorization" type="oauth-authorization:OAuthAuthorizationConfig"/>
+    <xs:complexType name="OAuthAuthorizationConfig">
+        <xs:annotation>
+            <xs:documentation>
+                <html:p>
+                    TODO
+                </html:p>
+            </xs:documentation>
+        </xs:annotation>
+
+        <xs:all>
+            <xs:element name="delegating" type="oauth-authorization:DelegatingType" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+
+        <xs:attribute name="client_id" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        This OAuth Client ID.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="client_secret" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        This OAuth Client Secret.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="requested_scope" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        The OAuth Scope this application is requesting.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="oauth_redirect_uri" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        This OAuth Client Redirect URI for callbacks.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="oauth_authorize_uri" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        The OAuth Service URI to send requests to if we need authorization.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="oauth_access_token_uri" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        The OAuth Service URI to send requests to get an access token.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="enclave-header-name" type="xs:string" use="optional" default="X-Auth-Token">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        This is the name of the header where the local enclave identifier is passed in.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="redirect-state-cache-timeout-millis" type="oauth-authorization:ZeroOrPositiveInteger" use="optional" default="3600000">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        Time in milliseconds to cache the OAuth state and original destination if the authorization
+                        redirect sequence must be initiated to receive an OAuth token. The default is 60 minutes.
+                        A value of Zero (0) is disabled, meaning that state is never purged.
+                        Any value of less than 30 seconds is essentially useless as there must the time for the redirects
+                        and human intervention must be accounted for.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="oauth_masked_uri" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        The portion of the local URI to be replaced by the proxied URI.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="oauth_proxied_uri" type="xs:string" use="optional" default="">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        The OAuth Service URI that is being proxied.
+                        This is the root of the REST API that requires authorization.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="oauth_proxied_host" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        The OAuth Service URI that is being proxied.
+                        This is the root of the REST API that requires authorization.
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="DelegatingType">
+        <xs:annotation>
+            <xs:documentation>
+                <html:p>Whether or not you would like this filter to populate the delegation headers. Inclusion means you do.</html:p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="quality" type="oauth-authorization:QualityType" use="optional" default="0.3">
+            <xs:annotation>
+                <xs:documentation>
+                    <html:p>
+                        What quality you want any output headers to be.
+                        When setting up a chain of delegating filters the highest quality number will be the one that is eventually output.
+                        Default is 0.3
+                    </html:p>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:simpleType name="QualityType">
+        <xs:restriction base="xs:double">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="1.0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ZeroOrPositiveInteger">
+        <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

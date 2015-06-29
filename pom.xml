@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.openrepose.filters.custom</groupId>
+    <artifactId>repose-oauth-test</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+
+    <name>Repose OAuth Test</name>
+
+    <packaging>pom</packaging>
+
+    <description>
+        Master POM file to provide packaging a deployable custom filter.
+    </description>
+
+    <organization>
+        <name>Rackspace US, Inc.</name>
+        <url>http://www.openrepose.com/</url>
+    </organization>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.license>apache20</project.license>
+        <project.inceptionYear>2010</project.inceptionYear>
+        <repose.version>7.1.2.0</repose.version>
+        <http.delegation.version>4.0.0</http.delegation.version>
+        <scala.version>2.10.3</scala.version>
+        <scala.dep.version>2.10</scala.dep.version>
+        <log4j.version>2.3</log4j.version>
+        <junit.version>4.10</junit.version>
+        <org.springframework.version>4.1.4.RELEASE</org.springframework.version>
+        <mockito.version>1.9.5</mockito.version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <modules>
+        <module>oauth-bundle</module>
+        <module>oauth-authorization</module>
+    </modules>
+
+    <repositories>
+        <repository>
+            <id>public.maven.research.rackspace.com</id>
+            <name>Rackspace Research</name>
+            <url>https://maven.research.rackspacecloud.com/content/groups/aggregate</url>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.openrepose</groupId>
+                <artifactId>core-lib</artifactId>
+                <version>${repose.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openrepose</groupId>
+                <artifactId>core-service-api</artifactId>
+                <version>${repose.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openrepose</groupId>
+                <artifactId>utilities</artifactId>
+                <version>${repose.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openrepose</groupId>
+                <artifactId>http-delegation</artifactId>
+                <version>${http.delegation.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jvnet.jaxb2_commons</groupId>
+                <artifactId>jaxb2-basics-runtime</artifactId>
+                <version>0.6.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.typesafe.scala-logging</groupId>
+                <artifactId>scala-logging-slf4j_${scala.dep.version}</artifactId>
+                <version>2.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.dep.version}</artifactId>
+                <version>2.2.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>1.9.5</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${org.springframework.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <type>test-jar</type>
+            <version>${log4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Java Compiler 1.7 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.3.2</version>
+                    <configuration>
+                        <source>1.7</source>
+                        <target>1.7</target>
+                    </configuration>
+                </plugin>
+                <!-- For Scala Support -->
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <!--
+                     http://davidb.github.io/scala-maven-plugin/example_java.html
+                     Adjusted execution for the scala plugin to cooperate with mixed scala/java projects
+                    -->
+                    <executions>
+                        <execution>
+                            <id>scala-compile-first</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>add-source</goal>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>scala-test-compile</id>
+                            <phase>process-test-resources</phase>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Cleans up the XSD to conform to XML 1.0 -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>xml-maven-plugin</artifactId>
+                    <version>1.0</version>
+                    <configuration>
+                        <transformationSets>
+                            <transformationSet>
+                                <dir>src/main/resources/META-INF/schema/config</dir>
+                                <stylesheet>../remove-1.1-elements.xsl</stylesheet>
+                                <outputDir>${project.build.directory}/generated-resources/xml/xslt/config</outputDir>
+                            </transformationSet>
+                        </transformationSets>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>transform</goal>
+                            </goals>
+                            <phase>generate-sources</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- JAXB Schema Compilation Support -->
+                <plugin>
+                    <groupId>org.jvnet.jaxb2.maven2</groupId>
+                    <artifactId>maven-jaxb2-plugin</artifactId>
+                    <version>0.8.1</version>
+                    <configuration>
+                        <specVersion>2.2</specVersion>
+                        <schemaDirectory>${project.build.directory}/generated-resources/xml/xslt</schemaDirectory>
+                        <schemaIncludes>
+                            <include>**/*.xsd</include>
+                        </schemaIncludes>
+                        <bindingIncludes>
+                            <include>**/*.xjb</include>
+                        </bindingIncludes>
+                        <strict>true</strict>
+                        <verbose>false</verbose>
+                        <extension>true</extension>
+                        <args>
+                            <arg>-XtoString</arg>
+                        </args>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.jvnet.jaxb2_commons</groupId>
+                                <artifactId>jaxb2-basics</artifactId>
+                                <version>0.6.3</version>
+                            </plugin>
+                        </plugins>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            <phase>process-sources</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.2.2</version>
+                    <configuration>
+                        <preparationGoals>clean install</preparationGoals>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

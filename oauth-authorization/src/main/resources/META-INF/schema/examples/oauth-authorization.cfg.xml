@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<oauth-authorization xmlns="http://docs.example.com/repose/oauth-authorization/v1.0"
+                     client_id="abc123def456ghi789"
+                     client_secret="abc123def456ghi789jkl"
+                     requested_scope="user:email,read:public_key"
+                     oauth_redirect_uri="https://oauth-test.openrepose.org/callback"
+                     oauth_authorize_uri="https://www.github.com/login/oauth/authorize"
+                     oauth_access_token_uri="https://www.github.com/login/oauth/access_token"
+                     enclave-header-name="X-Auth-Token"
+                     redirect-state-cache-timeout-millis="3600000"
+                     oauth_masked_uri="/apigithubcom"
+                     oauth_proxied_uri=""
+                     oauth_proxied_host="https://api.github.com"
+        >
+    <delegating quality="0.3"/>
+</oauth-authorization>

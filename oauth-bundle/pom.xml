@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.openrepose.filters.custom</groupId>
+        <artifactId>repose-oauth-test</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <name>Repose OAuth Test - EAR Bundle</name>
+    <artifactId>oauth-bundle</artifactId>
+    <packaging>ear</packaging>
+
+    <description>
+        This filter bundle is for deploying the custom OAuth2 filters.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.openrepose.filters.custom</groupId>
+            <artifactId>oauth-authorization</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>2.5</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>Package Ear Contents</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>ear</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generateApplicationXml>false</generateApplicationXml>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

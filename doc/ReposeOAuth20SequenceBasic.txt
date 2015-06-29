@@ -1,0 +1,13 @@
+title Repose OAuth 2.0 Sequence
+
+Browser->Repose: A.1. Request Resource
+Repose->Browser: A.2. Redirect (Id, Requested Scope, State, URI)
+Browser->OAuth Service: B. Authorize (This may be several interactions)
+OAuth Service->Browser: C.1. Redirect (Code, State)
+Browser->Repose: C.2.
+note right of Repose: Ensure State is correct before continuing
+Repose->OAuth Service: D. Request Token (ID, Secret, Code, URI)
+OAuth Service->Repose: E. Response Token (Access Token, Authroized Scope)
+Repose->Origin Service: 1. Request Resource (Access Token)
+Origin Service->Repose: 2. Response Resource
+Repose->Browser: 3. Response Resource
