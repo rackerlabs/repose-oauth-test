@@ -37,6 +37,7 @@ import org.openrepose.core.filter.FilterConfigHelper
 import org.openrepose.core.services.config.ConfigurationService
 import org.openrepose.core.services.datastore.DatastoreService
 import org.openrepose.core.services.serviceclient.akka.AkkaServiceClient
+import org.openrepose.core.services.serviceclient.akka.AkkaServiceClientFactory
 import org.openrepose.filters.custom.oauthauthorization.config.OAuthAuthorizationConfig
 
 import scala.collection.JavaConversions._
@@ -44,7 +45,7 @@ import scala.io.Source
 
 @Named
 class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationService,
-                                         akkaServiceClient: AkkaServiceClient,
+                                         akkaServiceClientFactory: AkkaServiceClientFactory,
                                          datastoreService: DatastoreService)
 
   extends Filter
@@ -57,6 +58,7 @@ class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationServ
   private final val KEY_PREFIX_TOKEN = "OAuth_TOKEN:"
   private final val KEY_PREFIX_DESTINATION = "OAuth_DESTINATION:"
   private val datastore = datastoreService.getDefaultDatastore
+  var akkaServiceClient: AkkaServiceClient = _
   private var initialized = false
   private var configurationFile: String = DEFAULT_CONFIG
   private var configuration: OAuthAuthorizationConfig = _
@@ -77,6 +79,7 @@ class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationServ
   }
 
   override def destroy(): Unit = {
+    Option(akkaServiceClient).foreach(_.destroy())
     configurationService.unsubscribeFrom(configurationFile, this)
   }
 
@@ -92,18 +95,21 @@ class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationServ
       // For the purposes of this example, the configured messages are logged
       // before and after the Filter Chain is processed.
       if (handleRequest(mutableHttpRequest, mutableHttpResponse)) {
-        //logger.trace("Passing Request on down the Filter Chain...")
+        //logger.info("Passing Request on down the Filter Chain...")
         filterChain.doFilter(mutableHttpRequest, mutableHttpResponse)
         handleResponse(mutableHttpRequest, mutableHttpResponse)
       }
     }
-    logger.trace("Returning response...")
+    logger.info("Returning response...")
   }
 
   // This class is generated from.xsd file.
   override def configurationUpdated(configurationObject: OAuthAuthorizationConfig): Unit = {
-    logger.trace("Configuration Updated...")
+    logger.info("Configuration Updated...")
     configuration = configurationObject
+    val akkaServiceClientOld = Option(akkaServiceClient)
+    akkaServiceClient = akkaServiceClientFactory.newAkkaServiceClient()
+    akkaServiceClientOld.foreach(_.destroy())
     initialized = true
   }
 
@@ -112,7 +118,7 @@ class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationServ
   case class TokenCreationInfo(responseCode: Int, userId: Option[String], userName: String, retry: String)
 
   def handleRequest(httpServletRequest: MutableHttpServletRequest, httpServletResponse: MutableHttpServletResponse): Boolean = {
-    logger.trace("Processing request...")
+    logger.info("Processing request...")
     //////////
     // TODO: REMOVE THIS!!!
     httpServletRequest.addHeader(configuration.getEnclaveHeaderName, "this-is-a-test")
@@ -120,29 +126,29 @@ class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationServ
     //////////
     Option(httpServletRequest.getHeader(configuration.getEnclaveHeaderName)) match {
       case Some(user) =>
-        logger.trace(s"Found ${configuration.getEnclaveHeaderName} with value $user")
+        logger.info(s"Found ${configuration.getEnclaveHeaderName} with value $user")
         Option(datastore.get(KEY_PREFIX_TOKEN + user)) match {
           case Some(token) =>
-            logger.trace(s"Found token $token")
+            logger.info(s"Found token $token")
             Option(datastore.get(KEY_PREFIX_DESTINATION + user)) match {
               case Some(destination) =>
                 datastore.remove(KEY_PREFIX_DESTINATION + user)
                 httpServletRequest.setRequestUri(destination.toString)
-                logger.trace("Updated Request URI to pre-redirect value:" + httpServletRequest.getRequestURI)
+                logger.info("Updated Request URI to pre-redirect value:" + httpServletRequest.getRequestURI)
               case None =>
-                logger.trace("No saved Destination.")
+                logger.info("No saved Destination.")
             }
             httpServletRequest.getRequestURI match {
               case uri if uri.equals(configuration.getOauthRedirectUri) =>
-                logger.trace("Authorization Redirect Return")
+                logger.info("Authorization Redirect Return")
                 Option(datastore.get(KEY_PREFIX_STATE + user)) match {
                   case Some(state) =>
-                    logger.trace(s"Found saved state $state")
+                    logger.info(s"Found saved state $state")
                     datastore.remove(KEY_PREFIX_STATE + user)
                     val stateString = state.toString
                     Option(httpServletRequest.getParameter("state")) match {
                       case Some(stateParam) if stateParam.equals(stateString) =>
-                        logger.trace(s"Provided state $stateParam matches saved state.")
+                        logger.info(s"Provided state $stateParam matches saved state.")
                         sendTokenRequest(httpServletRequest, user)
                       case None =>
                         logger.error("Provided State does NOT match saved State!")
@@ -151,16 +157,16 @@ class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationServ
                     logger.error("No saved State found to compare to!")
                 }
               case uri if uri.contains(configuration.getOauthMaskedUri) =>
-                logger.trace("Masked Resource Request.")
+                logger.info("Masked Resource Request.")
                 httpServletRequest.setRequestUri(uri.replace(configuration.getOauthMaskedUri, configuration.getOauthProxiedUri))
               case _ =>
-                logger.trace("Requested URI: " + httpServletRequest.getRequestURI)
-                logger.trace("Requested URL: " + httpServletRequest.getRequestURL)
+                logger.info("Requested URI: " + httpServletRequest.getRequestURI)
+                logger.info("Requested URL: " + httpServletRequest.getRequestURL)
             }
             makeProxiedRequest(httpServletRequest, token.toString) match {
               case Some(proxiedResponse) =>
                 val resp = Source.fromInputStream(proxiedResponse.getData).getLines().mkString("\n")
-                logger.trace("Received from OAuth'd Request:\n" + resp)
+                logger.info("Received from OAuth'd Request:\n" + resp)
                 true
               case None =>
                 logger.error("Provided code is blank!")
@@ -177,7 +183,7 @@ class OAuthAuthorizationFilter @Inject()(configurationService: ConfigurationServ
   }
 
   def handleResponse(httpServletRequest: HttpServletRequest, httpServletResponse: ReadableHttpServletResponse): Unit = {
-    logger.trace("Processing response...")
+    logger.info("Processing response...")
 
     val responseStatus = httpServletResponse.getStatus
     logger.debug("Incoming status code: " + responseStatus)
