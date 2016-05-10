@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 import org.mockito.{ArgumentCaptor, Matchers, Mockito}
 import org.openrepose.core.services.config.ConfigurationService
 import org.openrepose.core.services.datastore.{Datastore, DatastoreService}
-import org.openrepose.core.services.serviceclient.akka.AkkaServiceClient
+import org.openrepose.core.services.serviceclient.akka.{AkkaServiceClientFactory, AkkaServiceClient}
 import org.openrepose.filters.custom.oauthauthorization.config.OAuthAuthorizationConfig
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
@@ -48,6 +48,7 @@ class OAuthAuthorizationFilterTest extends FunSpec with BeforeAndAfterAll with B
   var mockConfigService: ConfigurationService = _
   var mockFilterConfig: MockFilterConfig = _
   var mockAkkaServiceClient: AkkaServiceClient = _
+  var mockAkkaServiceClientFactory: AkkaServiceClientFactory = _
   var mockDatastoreService: DatastoreService = _
   var mockDatastore: Datastore = _
   var totalMessages: Int = _
@@ -64,6 +65,7 @@ class OAuthAuthorizationFilterTest extends FunSpec with BeforeAndAfterAll with B
     filterChain = new MockFilterChain
     mockConfigService = mock[ConfigurationService]
     mockAkkaServiceClient = mock[AkkaServiceClient]
+    mockAkkaServiceClientFactory = mock[AkkaServiceClientFactory]
     mockDatastoreService = mock[DatastoreService]
     mockDatastore = mock[Datastore]
     mockFilterConfig = new MockFilterConfig("OAuthAuthorizationFilter")
@@ -79,7 +81,7 @@ class OAuthAuthorizationFilterTest extends FunSpec with BeforeAndAfterAll with B
     listAppender = ctx.getConfiguration.getAppender("List0").asInstanceOf[ListAppender].clear
     Mockito.when(mockDatastore.get(Matchers.anyString)).thenReturn(null, Nil: _*)
     Mockito.when(mockDatastoreService.getDefaultDatastore).thenReturn(mockDatastore)
-    filter = new OAuthAuthorizationFilter(mockConfigService, mockAkkaServiceClient, mockDatastoreService)
+    filter = new OAuthAuthorizationFilter(mockConfigService, mockAkkaServiceClientFactory, mockDatastoreService)
   }
 
   after {
